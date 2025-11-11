@@ -55,24 +55,29 @@ export async function getAllPerksPublic(req, res, next) {
   try {
     // Extract query parameters for search and filter
     const { search, merchant } = req.query;
-    
+
     // Build query object dynamically
     let query = {};
-    
+
     // If search parameter exists, search by title (case-insensitive)
     if (search && search.trim()) {
       query.title = { $regex: search.trim(), $options: 'i' };
     }
-    
+
     // If merchant parameter exists, filter by exact merchant name
     if (merchant && merchant.trim()) {
       query.merchant = merchant.trim();
     }
-    
+
     // Fetch perks with the built query, populate creator info, and sort by newest first
+    // Only populate if createdBy is a valid ObjectId
     const perks = await Perk
       .find(query)
-      .populate('createdBy', 'name email') // Include creator information
+      .populate({
+        path: 'createdBy',
+        select: 'name email',
+        match: { _id: { $exists: true } } // Only populate if the referenced user exists
+      })
       .sort({ createdAt: -1 })
       .lean();
 

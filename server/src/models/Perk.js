@@ -7,7 +7,16 @@ const perkSchema = new mongoose.Schema(
     category: { type: String, enum: ['food', 'tech', 'travel', 'fitness', 'other'], default: 'other' },
     discountPercent: { type: Number, min: 0, max: 100, default: 0 },
     merchant: { type: String },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      validate: {
+        validator: function(v) {
+          return mongoose.Types.ObjectId.isValid(v);
+        },
+        message: 'CreatedBy must be a valid ObjectId'
+      }
+    }
   },
   { timestamps: true }
 );
